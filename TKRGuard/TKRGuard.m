@@ -117,11 +117,9 @@ static TKRGuard *_sharedInstance = nil;
         token = [self.tokens objectForKey:key];
         if (!token) {
             token = [TKRGuardToken new];
-            token.waitCount = times;
-        } else {
-            token.waitCount = times - token.waitCount;
-            token.preceding = NO;
         }
+        token.preceding = NO;
+        token.waitCount = times;
 #else
         token = [TKRGuardToken new];
         token.waitCount = times;
@@ -129,7 +127,9 @@ static TKRGuard *_sharedInstance = nil;
         [self.tokens setObject:token forKey:key];
     }
     
-    return [token waitWithTimeout:timeout];
+    TKRGuardStatus status = [token waitWithTimeout:timeout];
+    [self.tokens removeObjectForKey:key];
+    return status;
 }
 
 - (void)removeTokenForKey:(id)key withStatus:(TKRGuardStatus)status
@@ -137,28 +137,15 @@ static TKRGuard *_sharedInstance = nil;
     @synchronized (self) {
 #ifdef ALLOW_TKRGUARD_DELAYWAIT
         TKRGuardToken *token = [self.tokens objectForKey:key];
-        if (token) {
-            if (token.isPreceding) {
-                ++token.waitCount;
-                token.resultStatus = status;
-            }  else {
-                [token resumeWithStatus:status];
-                if (!token.isWaiting) {
-                    [self.tokens removeObjectForKey:key];
-                }
-            }
-        } else {
-            TKRGuardToken *token = [TKRGuardToken new];
+        if (!token) {
+            token = [TKRGuardToken new];
             token.preceding = YES;
-            token.resultStatus = status;
             [self.tokens setObject:token forKey:key];
         }
+        [token resumeWithStatus:status];
 #else
         TKRGuardToken *token = [self.tokens objectForKey:key];
         [token resumeWithStatus:status];
-        if (!token.isWaiting) {
-            [self.tokens removeObjectForKey:key];
-        }
 #endif
     }
 }
