@@ -110,9 +110,11 @@ static TKRGuard *_sharedInstance = nil;
 
 - (TKRGuardStatus)waitAndAddTokenWithTimeout:(NSTimeInterval)timeout forKey:(id)key times:(NSUInteger)times
 {
+    TKRGuardToken *token = nil;
+    
     @synchronized (self) {
 #ifdef ALLOW_TKRGUARD_DELAYWAIT
-        TKRGuardToken *token = [self.tokens objectForKey:key];
+        token = [self.tokens objectForKey:key];
         if (!token) {
             token = [TKRGuardToken new];
             token.waitCount = times;
@@ -121,12 +123,13 @@ static TKRGuard *_sharedInstance = nil;
             token.preceding = NO;
         }
 #else
-        TKRGuardToken *token = [TKRGuardToken new];
+        token = [TKRGuardToken new];
         token.waitCount = times;
 #endif
         [self.tokens setObject:token forKey:key];
-        return [token waitWithTimeout:timeout];
     }
+    
+    return [token waitWithTimeout:timeout];
 }
 
 - (void)removeTokenForKey:(id)key withStatus:(TKRGuardStatus)status

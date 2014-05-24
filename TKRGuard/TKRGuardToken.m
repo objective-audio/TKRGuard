@@ -45,8 +45,8 @@ static const NSTimeInterval TKRGuardTokenLoopInterval = 0.05;
 
 - (void)resumeWithStatus:(TKRGuardStatus)status
 {
-    --self.waitCount;
     self.resultStatus = status;
+    --self.waitCount;
 }
 
 - (BOOL)isWaiting
