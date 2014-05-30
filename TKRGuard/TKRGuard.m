@@ -39,6 +39,14 @@ static TKRGuard *_sharedInstance = nil;
     return self;
 }
 
+- (void)dealloc
+{
+#if ! __has_feature(objc_arc)
+    [_tokens release];
+    [super dealloc];
+#endif
+}
+
 //----------------------------------------------------------------------------//
 #pragma mark - Public Interface
 //----------------------------------------------------------------------------//
@@ -117,11 +125,17 @@ static TKRGuard *_sharedInstance = nil;
         token = [self.tokens objectForKey:key];
         if (!token) {
             token = [TKRGuardToken new];
+#if ! __has_feature(objc_arc)
+            [token autorelease];
+#endif
         }
         token.preceding = NO;
         token.waitCount = times;
 #else
         token = [TKRGuardToken new];
+#if ! __has_feature(objc_arc)
+        [token autorelease];
+#endif
         token.waitCount = times;
 #endif
         [self.tokens setObject:token forKey:key];
@@ -141,6 +155,9 @@ static TKRGuard *_sharedInstance = nil;
             token = [TKRGuardToken new];
             token.preceding = YES;
             [self.tokens setObject:token forKey:key];
+#if ! __has_feature(objc_arc)
+            [token release];
+#endif
         }
         [token resumeWithStatus:status];
 #else
