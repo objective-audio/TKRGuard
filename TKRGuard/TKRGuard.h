@@ -23,12 +23,14 @@
 
 #define TKRGUARD_KEY ([TKRGuard adjustedKey:[NSString stringWithFormat:@"%s", __PRETTY_FUNCTION__]])
 #define TKRGUARD_TIMEOUT TKRGUARD_FAILE(@"TKRGuard timeouted")
-#define TKRAssertEqualStatus(v, e) TKRGuardStatus e_ ## __LINE__ = (e); \
-                                   TKRGuardStatus v_ ## __LINE__ = (v); \
-                                   e_ ## __LINE__ == v_ ## __LINE__ ? \
-                                   (void)nil : \
-                                   TKRGUARD_FAILE(@"%@", [TKRGuard guideMessageWithExpected:e_ ## __LINE__  \
-                                                                                        got:v_ ## __LINE__])
+#define TKRAssertEqualStatus__(v, e, l) TKRGuardStatus e__ ## l = (e); \
+                                        TKRGuardStatus v__ ## l = (v); \
+                                        e__ ## l == v__ ## l ? \
+                                        (void)nil : \
+                                        TKRGUARD_FAILE(@"%@", [TKRGuard guideMessageWithExpected:e__ ## l  \
+                                                                                             got:v__ ## l])
+#define TKRAssertEqualStatus_(v, e, l) TKRAssertEqualStatus__(v, e, l)
+#define TKRAssertEqualStatus(v, e) TKRAssertEqualStatus_(v, e, __LINE__)
 
 #if !defined(UNUSE_TKRGUARD_SHORTHAND)
 
